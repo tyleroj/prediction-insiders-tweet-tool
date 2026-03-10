@@ -354,34 +354,34 @@
   <div class="card">
 
     <div class="section-label">
-      Tool Card Screenshot <span style="color:#ef4444">*</span>
+      Betting Slip Screenshot
+      <span class="optional-badge">Optional</span>
     </div>
-    <div class="upload-zone" id="toolZone">
-      <input type="file" id="toolInput" accept="image/*" />
+    <div class="upload-zone" id="slipZone" data-target="slip">
+      <input type="file" id="slipInput" accept="image/*" />
       <div class="upload-empty">
-        <div class="upload-icon">📊</div>
-        <div class="upload-title">Drop tool card screenshot here</div>
-        <div class="upload-hint">PNG, JPG up to 10MB</div>
+        <div class="upload-icon">🧾</div>
+        <div class="upload-title">Drop or paste Polymarket slip here</div>
+        <div class="upload-hint">PNG, JPG up to 10MB · Ctrl+V / ⌘V to paste</div>
       </div>
-      <div class="upload-preview" id="toolPreview">
-        <img id="toolImg" src="" alt="Tool card" />
+      <div class="upload-preview" id="slipPreview">
+        <img id="slipImg" src="" alt="Betting slip" />
         <span class="change-label">Change</span>
       </div>
     </div>
 
     <div class="section-label">
-      Betting Slip Screenshot
-      <span class="optional-badge">Optional</span>
+      Tool Card Screenshot <span style="color:#ef4444">*</span>
     </div>
-    <div class="upload-zone" id="slipZone">
-      <input type="file" id="slipInput" accept="image/*" />
+    <div class="upload-zone" id="toolZone" data-target="tool">
+      <input type="file" id="toolInput" accept="image/*" />
       <div class="upload-empty">
-        <div class="upload-icon">🧾</div>
-        <div class="upload-title">Drop Polymarket slip here</div>
-        <div class="upload-hint">PNG, JPG up to 10MB</div>
+        <div class="upload-icon">📊</div>
+        <div class="upload-title">Drop or paste tool card screenshot here</div>
+        <div class="upload-hint">PNG, JPG up to 10MB · Ctrl+V / ⌘V to paste</div>
       </div>
-      <div class="upload-preview" id="slipPreview">
-        <img id="slipImg" src="" alt="Betting slip" />
+      <div class="upload-preview" id="toolPreview">
+        <img id="toolImg" src="" alt="Tool card" />
         <span class="change-label">Change</span>
       </div>
     </div>
@@ -456,10 +456,65 @@
     setupUpload('toolInput', 'toolZone', 'toolImg', 'toolPreview');
     setupUpload('slipInput', 'slipZone', 'slipImg', 'slipPreview');
 
+    // Paste support: paste into focused zone, or use last-clicked zone, or prompt
+    let lastFocusedZone = null;
+
+    ['toolZone', 'slipZone'].forEach(id => {
+      const zone = document.getElementById(id);
+      zone.addEventListener('mouseenter', () => { lastFocusedZone = id; });
+      zone.addEventListener('click', () => { lastFocusedZone = id; });
+    });
+
+    document.addEventListener('paste', (e) => {
+      const items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+
+      let imageItem = null;
+      for (const item of items) {
+        if (item.type.startsWith('image/')) { imageItem = item; break; }
+      }
+      if (!imageItem) return;
+
+      e.preventDefault();
+      const file = imageItem.getAsFile();
+      if (!file) return;
+
+      // Determine target zone: last focused, or ask
+      let targetZoneId = lastFocusedZone;
+      if (!targetZoneId) {
+        const choice = confirm('Paste image into Tool Card zone?\n\nOK = Tool Card\nCancel = Betting Slip');
+        targetZoneId = choice ? 'toolZone' : 'slipZone';
+      }
+
+      const isToolZone = targetZoneId === 'toolZone';
+      const inputId  = isToolZone ? 'toolInput'  : 'slipInput';
+      const imgId    = isToolZone ? 'toolImg'    : 'slipImg';
+      const zoneEl   = document.getElementById(targetZoneId);
+
+      // Load preview
+      const reader = new FileReader();
+      reader.onload = ev => {
+        document.getElementById(imgId).src = ev.target.result;
+        zoneEl.classList.add('has-file');
+      };
+      reader.readAsDataURL(file);
+
+      // Inject file into the hidden input via DataTransfer so FormData picks it up
+      try {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        document.getElementById(inputId).files = dt.files;
+      } catch (_) {
+        // DataTransfer not supported — store file reference for manual FormData append
+        document.getElementById(inputId)._pastedFile = file;
+      }
+    });
+
     async function generate() {
-      const toolFile = document.getElementById('toolInput').files[0];
+      const toolInputEl = document.getElementById('toolInput');
+      const toolFile = toolInputEl.files[0] || toolInputEl._pastedFile;
       if (!toolFile) {
-        showError('Please upload the tool card screenshot.');
+        showError('Please upload or paste the tool card screenshot.');
         return;
       }
 
@@ -474,10 +529,14 @@
       errorEl.style.display = 'none';
 
       try {
+        const toolInput = document.getElementById('toolInput');
+        const toolFile = toolInput.files[0] || toolInput._pastedFile;
+
         const formData = new FormData();
         formData.append('toolCard', toolFile);
 
-        const slipFile = document.getElementById('slipInput').files[0];
+        const slipInput = document.getElementById('slipInput');
+        const slipFile = slipInput.files[0] || slipInput._pastedFile;
         if (slipFile) formData.append('slip', slipFile);
 
         const label = document.getElementById('labelInput').value.trim();
