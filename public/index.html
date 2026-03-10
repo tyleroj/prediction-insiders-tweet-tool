@@ -62,66 +62,9 @@
       letter-spacing: 0.8px;
       color: #6b7280;
       margin-bottom: 10px;
-    }
-
-    .upload-zone {
-      border: 1.5px dashed #2d3240;
-      border-radius: 10px;
-      padding: 24px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      position: relative;
-      margin-bottom: 16px;
-    }
-
-    .upload-zone:hover {
-      border-color: #5fffb0;
-      background: rgba(95, 255, 176, 0.03);
-    }
-
-    .upload-zone.has-file {
-      border-color: #5fffb0;
-      border-style: solid;
-      background: rgba(95, 255, 176, 0.04);
-    }
-
-    .upload-zone input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
-    }
-
-    .upload-icon {
-      font-size: 28px;
-      margin-bottom: 8px;
-    }
-
-    .upload-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #c9cdd8;
-      margin-bottom: 4px;
-    }
-
-    .upload-hint {
-      font-size: 12px;
-      color: #4b5563;
-    }
-
-    .upload-zone.has-file .upload-title {
-      color: #5fffb0;
-    }
-
-    .preview-img {
-      max-width: 100%;
-      max-height: 120px;
-      border-radius: 6px;
-      margin-top: 10px;
-      object-fit: contain;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .optional-badge {
@@ -132,10 +75,101 @@
       color: #6b7280;
       border-radius: 4px;
       padding: 2px 6px;
-      margin-left: 6px;
-      vertical-align: middle;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 1.5px dashed #2d3240;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .upload-zone:hover {
+      border-color: #5fffb0;
+      background: rgba(95, 255, 176, 0.03);
+    }
+
+    .upload-zone.has-file {
+      border-color: #5fffb0;
+      border-style: solid;
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+    }
+
+    /* Empty state */
+    .upload-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 20px;
+      gap: 6px;
+    }
+
+    .upload-icon { font-size: 28px; }
+
+    .upload-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #c9cdd8;
+    }
+
+    .upload-hint {
+      font-size: 12px;
+      color: #4b5563;
+    }
+
+    /* Filled state: full-size image */
+    .upload-preview {
+      display: none;
+      width: 100%;
+      height: 220px;
+      position: relative;
+    }
+
+    .upload-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      border-radius: 8px;
+    }
+
+    .upload-preview .change-label {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(13,15,20,0.8);
+      color: #5fffb0;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 5px;
+      pointer-events: none;
+    }
+
+    .upload-zone.has-file .upload-empty { display: none; }
+    .upload-zone.has-file .upload-preview { display: block; }
+
+    .divider {
+      height: 1px;
+      background: #1e2330;
+      margin: 20px 0;
     }
 
     .label-input {
@@ -151,13 +185,8 @@
       transition: border-color 0.2s;
     }
 
-    .label-input:focus {
-      border-color: #5fffb0;
-    }
-
-    .label-input::placeholder {
-      color: #3d4251;
-    }
+    .label-input:focus { border-color: #5fffb0; }
+    .label-input::placeholder { color: #3d4251; }
 
     .generate-btn {
       width: 100%;
@@ -206,13 +235,24 @@
       max-width: 560px;
     }
 
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
     .result-label {
       font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.8px;
       color: #6b7280;
-      margin-bottom: 8px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 6px;
     }
 
     .tweet-box {
@@ -220,14 +260,14 @@
       border: 1px solid #252830;
       border-radius: 12px;
       padding: 18px 20px;
-      margin-bottom: 12px;
+      margin-bottom: 20px;
       white-space: pre-wrap;
       font-size: 14px;
       line-height: 1.65;
       color: #d1d5db;
     }
 
-    .copy-btn {
+    .action-btn {
       background: #1e2330;
       border: 1px solid #2d3240;
       border-radius: 7px;
@@ -236,27 +276,54 @@
       font-weight: 600;
       padding: 6px 12px;
       cursor: pointer;
-      float: right;
-      margin-top: -4px;
-      margin-left: 8px;
-      transition: background 0.2s, color 0.2s;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      white-space: nowrap;
     }
 
-    .copy-btn:hover {
+    .action-btn:hover {
       background: #252d3f;
-      color: #5fffb0;
-    }
-
-    .copy-btn.copied {
       color: #5fffb0;
       border-color: #5fffb0;
     }
 
-    .result-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .action-btn.copied {
+      color: #5fffb0;
+      border-color: #5fffb0;
+    }
+
+    .action-btn.tweet-btn {
+      background: #1a2236;
+      border-color: #1d9bf0;
+      color: #1d9bf0;
+    }
+
+    .action-btn.tweet-btn:hover {
+      background: #1d9bf015;
+      color: #1d9bf0;
+      border-color: #1d9bf0;
+    }
+
+    .regen-row {
+      margin-top: 4px;
       margin-bottom: 8px;
+    }
+
+    .regen-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid #2d3240;
+      border-radius: 10px;
+      color: #6b7280;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 11px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .regen-btn:hover {
+      border-color: #5fffb0;
+      color: #5fffb0;
     }
 
     .error-msg {
@@ -271,12 +338,6 @@
       max-width: 560px;
       width: 100%;
     }
-
-    .divider {
-      height: 1px;
-      background: #1e2330;
-      margin: 20px 0;
-    }
   </style>
 </head>
 <body>
@@ -289,13 +350,20 @@
 
   <div class="card">
 
-    <div class="section-label">Tool Card Screenshot <span style="color:#ef4444">*</span></div>
+    <div class="section-label">
+      Tool Card Screenshot <span style="color:#ef4444">*</span>
+    </div>
     <div class="upload-zone" id="toolZone">
       <input type="file" id="toolInput" accept="image/*" />
-      <div class="upload-icon">📊</div>
-      <div class="upload-title" id="toolTitle">Drop tool card screenshot here</div>
-      <div class="upload-hint">PNG, JPG up to 10MB</div>
-      <img class="preview-img" id="toolPreview" style="display:none" />
+      <div class="upload-empty">
+        <div class="upload-icon">📊</div>
+        <div class="upload-title">Drop tool card screenshot here</div>
+        <div class="upload-hint">PNG, JPG up to 10MB</div>
+      </div>
+      <div class="upload-preview" id="toolPreview">
+        <img id="toolImg" src="" alt="Tool card" />
+        <span class="change-label">Change</span>
+      </div>
     </div>
 
     <div class="section-label">
@@ -304,10 +372,15 @@
     </div>
     <div class="upload-zone" id="slipZone">
       <input type="file" id="slipInput" accept="image/*" />
-      <div class="upload-icon">🧾</div>
-      <div class="upload-title" id="slipTitle">Drop Polymarket slip here</div>
-      <div class="upload-hint">PNG, JPG up to 10MB</div>
-      <img class="preview-img" id="slipPreview" style="display:none" />
+      <div class="upload-empty">
+        <div class="upload-icon">🧾</div>
+        <div class="upload-title">Drop Polymarket slip here</div>
+        <div class="upload-hint">PNG, JPG up to 10MB</div>
+      </div>
+      <div class="upload-preview" id="slipPreview">
+        <img id="slipImg" src="" alt="Betting slip" />
+        <span class="change-label">Change</span>
+      </div>
     </div>
 
     <div class="divider"></div>
@@ -336,42 +409,49 @@
   <div class="error-msg" id="errorMsg"></div>
 
   <div class="results" id="results">
+
     <div class="result-header">
       <div class="result-label">Tweet 1 — The Hook</div>
-      <button class="copy-btn" id="copy1" onclick="copyTweet(1)">Copy</button>
+      <div class="btn-row">
+        <button class="action-btn tweet-btn" onclick="tweetIt(1)">Post to X</button>
+        <button class="action-btn" id="copy1" onclick="copyTweet(1)">Copy</button>
+      </div>
     </div>
     <div class="tweet-box" id="tweet1"></div>
 
     <div class="result-header">
       <div class="result-label">Tweet 2 — The Breakdown</div>
-      <button class="copy-btn" id="copy2" onclick="copyTweet(2)">Copy</button>
+      <div class="btn-row">
+        <button class="action-btn tweet-btn" onclick="tweetIt(2)">Post to X</button>
+        <button class="action-btn" id="copy2" onclick="copyTweet(2)">Copy</button>
+      </div>
     </div>
     <div class="tweet-box" id="tweet2"></div>
+
+    <div class="regen-row">
+      <button class="regen-btn" onclick="generate()">Regenerate Thread</button>
+    </div>
+
   </div>
 
   <script>
-    function setupUpload(inputId, zoneId, titleId, previewId) {
+    function setupUpload(inputId, zoneId, imgId, previewId) {
       const input = document.getElementById(inputId);
-      const zone = document.getElementById(zoneId);
-      const title = document.getElementById(titleId);
-      const preview = document.getElementById(previewId);
+      const zone  = document.getElementById(zoneId);
+      const img   = document.getElementById(imgId);
 
       input.addEventListener('change', () => {
         const file = input.files[0];
         if (!file) return;
-        title.textContent = file.name;
         zone.classList.add('has-file');
         const reader = new FileReader();
-        reader.onload = e => {
-          preview.src = e.target.result;
-          preview.style.display = 'block';
-        };
+        reader.onload = e => { img.src = e.target.result; };
         reader.readAsDataURL(file);
       });
     }
 
-    setupUpload('toolInput', 'toolZone', 'toolTitle', 'toolPreview');
-    setupUpload('slipInput', 'slipZone', 'slipTitle', 'slipPreview');
+    setupUpload('toolInput', 'toolZone', 'toolImg', 'toolPreview');
+    setupUpload('slipInput', 'slipZone', 'slipImg', 'slipPreview');
 
     async function generate() {
       const toolFile = document.getElementById('toolInput').files[0];
@@ -380,15 +460,15 @@
         return;
       }
 
-      const btn = document.getElementById('generateBtn');
+      const btn     = document.getElementById('generateBtn');
       const loading = document.getElementById('loading');
       const results = document.getElementById('results');
-      const errorMsg = document.getElementById('errorMsg');
+      const errorEl = document.getElementById('errorMsg');
 
       btn.disabled = true;
       loading.style.display = 'block';
       results.style.display = 'none';
-      errorMsg.style.display = 'none';
+      errorEl.style.display = 'none';
 
       try {
         const formData = new FormData();
@@ -400,24 +480,19 @@
         const label = document.getElementById('labelInput').value.trim();
         if (label) formData.append('label', label);
 
-        const response = await fetch('/generate', {
-          method: 'POST',
-          body: formData
-        });
-
+        const response = await fetch('/generate', { method: 'POST', body: formData });
         const data = await response.json();
 
-        if (!response.ok) {
-          throw new Error(data.error || 'Server error');
-        }
+        if (!response.ok) throw new Error(data.error || 'Server error');
 
         document.getElementById('tweet1').textContent = data.tweet1;
         document.getElementById('tweet2').textContent = data.tweet2;
 
-        document.getElementById('copy1').textContent = 'Copy';
-        document.getElementById('copy1').classList.remove('copied');
-        document.getElementById('copy2').textContent = 'Copy';
-        document.getElementById('copy2').classList.remove('copied');
+        ['copy1','copy2'].forEach(id => {
+          const el = document.getElementById(id);
+          el.textContent = 'Copy';
+          el.classList.remove('copied');
+        });
 
         results.style.display = 'block';
         results.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -447,6 +522,12 @@
           btn.classList.remove('copied');
         }, 2000);
       });
+    }
+
+    function tweetIt(num) {
+      const text = document.getElementById('tweet' + num).textContent;
+      const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text);
+      window.open(url, '_blank');
     }
   </script>
 
