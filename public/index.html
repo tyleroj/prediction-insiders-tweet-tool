@@ -248,6 +248,36 @@
       margin: 20px 0;
     }
 
+    .style-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+
+    .style-btn {
+      background: #1a1d25;
+      border: 1px solid #252830;
+      border-radius: 7px;
+      color: #6b7280;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .style-btn:hover {
+      border-color: #5fffb0;
+      color: #5fffb0;
+    }
+
+    .style-btn.active {
+      background: #1a2e22;
+      border-color: #5fffb0;
+      color: #5fffb0;
+    }
+
     .label-input {
       width: 100%;
       background: #1a1d25;
@@ -472,6 +502,18 @@
     <div class="divider"></div>
 
     <div class="section-label">
+      Style
+      <span class="optional-badge">Optional</span>
+    </div>
+    <div class="style-row">
+      <button class="style-btn active" data-style="">Auto</button>
+      <button class="style-btn" data-style="Sharp & Direct">Sharp</button>
+      <button class="style-btn" data-style="Hype">Hype</button>
+      <button class="style-btn" data-style="Analytical">Analytical</button>
+      <button class="style-btn" data-style="Casual">Casual</button>
+    </div>
+
+    <div class="section-label" style="margin-top:16px;">
       Custom Label
       <span class="optional-badge">Optional</span>
     </div>
@@ -621,6 +663,14 @@
     setupUpload('toolInput', 'toolZone');
     setupUpload('slipInput', 'slipZone');
 
+    // Style selector
+    document.querySelectorAll('.style-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
     // ── Keyboard paste fallback (Ctrl+V / ⌘V while page has focus) ───────────
     let lastHoveredZone = null;
     ['toolZone', 'slipZone'].forEach(id => {
@@ -672,6 +722,10 @@
 
         const label = document.getElementById('labelInput').value.trim();
         if (label) formData.append('label', label);
+
+        const activeStyle = document.querySelector('.style-btn.active');
+        const style = activeStyle ? activeStyle.dataset.style : '';
+        if (style) formData.append('style', style);
 
         const response = await fetch('/generate', { method: 'POST', body: formData });
         const data = await response.json();

@@ -30,37 +30,47 @@ The tool card contains these specific fields. Read them carefully and do not con
 - "Current" + cents value (e.g. 58c) = the CURRENT MARKET PRICE right now.
 - Slippage = the difference between current price and the insider's entry price. Calculate it as: current price minus insider entry price.
 
-RULES:
-- NEVER use em dashes (the — character). This is a hard rule with zero exceptions. Replace any em dash with a comma, colon, or rewrite the sentence.
-- No filler or hype words like "amazing" or "incredible"
-- Use specific numbers from the screenshots only. Do not fabricate or estimate numbers.
-- Keep tweet 1 under 220 characters
-- Tweet 2 must cover exactly 3 data points in this order: (1) insider entry price vs current price and slippage, (2) relative bet size as a conviction signal, (3) insider's sports ROI percentage
-- End tweet 2 with the score and "Higher score = better opportunity to follow."
-- Tone: confident, direct, data-driven. Not salesy.
+HARD RULES (never break these):
+- NEVER use em dashes (the character). Zero exceptions. Rewrite with a comma, colon, or new sentence.
+- Never fabricate numbers. Use only what is visible in the screenshots.
+- Keep tweet 1 under 220 characters.
+- Tweet 2 must include all 3 data points: insider entry vs current price + slippage, relative bet size, and sports ROI.
+- End tweet 2 with the score and a line about what the score means.
+- Never use the words "amazing", "incredible", "game-changer", or other pure hype filler.
 
-TWEET 1 FORMAT:
-[Sport] [Label] [emoji]
+VARIETY RULES (critical - read carefully):
+Multiple different affiliates will post these threads from their own accounts. Each generation must feel distinct from the last. You must actively rotate and vary:
+- The hook structure and opening line of tweet 1 (never repeat the same pattern)
+- The framing of each data point in tweet 2 (same facts, different angle each time)
+- The one-sentence description of what Prediction Insiders does (must be different every generation)
+- The CTA and closing line
+- Sentence rhythm, structure, and length throughout
 
-[Team A] vs [Team B] [Bet Type] @ [current price in cents]
+TWEET 1 HOOK OPTIONS - rotate between these styles. Pick a different one each generation:
+Style A - Lead with the event: "[Sport] [Label] [emoji]\n\n[Team A] vs [Team B], [Bet Type] @ [price]c\n\nFlagged by the Prediction Insiders tool. Thread below"
+Style B - Lead with the score: "[Score]/100 on the Prediction Insiders tool.\n\n[Team A] vs [Team B] [Bet Type]\n\nThat score doesn't show up often. Here's why"
+Style C - Lead with bet size: "An insider just put $[bet size] on [Team A] [Bet Type] on Polymarket.\n\nScore: [Score]/100.\n\nPrediction Insiders flagged it. Full breakdown"
+Style D - Lead with slippage: "Still [slippage]c of slippage on this one. Insider got in at [entry]c, it's [current]c now.\n\n[Team A] vs [Team B] [Bet Type]\n\nBreakdown"
+Style E - Lead with ROI: "This insider has a [ROI]% sports ROI. They just went [X]x their normal size on [Team A] [Bet Type].\n\nPrediction Insiders flagged it."
+Style F - Lead with tension or question: "How does a sharp drop $[bet size] on Polymarket and score a [Score]/100?\n\n[Team A] vs [Team B] [Bet Type]\n\nHere's what the tool found"
 
-Play came right from the NEW Prediction Insiders Tool
+Always end tweet 1 with a line pointing to the thread below. Keep tweet 1 under 220 characters.
 
-Full breakdown below 👇
+TWEET 2 STYLE TONES:
+The user may specify one of these. If not specified, pick the best fit and vary it across generations:
+- Sharp & Direct: Minimal words. Dense data. No filler commentary.
+- Hype: More energy and urgency. Strong verbs. Still data-driven but punchy.
+- Analytical: Explain the "why" behind each data point with brief context.
+- Casual: Conversational, first-person feel. Like texting a friend the play.
 
-TWEET 2 FORMAT:
-Took this play straight from the @OddsJam Prediction Insiders Tool:
-oddsjam.com/prediction/insiders
-
-[1 sentence: the tool identifies specific sharp insiders on Polymarket and tells you exactly when and how much to follow their bets]
-
-The insider entered at [insider entry price]c. Current price is [current price]c. That's [slippage amount] of slippage factored into the score.
-
-This bet is [Xb]x this insider's typical bet size. They put $[bet size] on this position. That kind of size means high conviction.
-
-Their sports ROI: [ROI]%.
-
-Score: [Score]/100. Higher score = better opportunity to follow.
+TWEET 2 REQUIREMENTS:
+- Open with a one-sentence description of what Prediction Insiders does. This sentence MUST be different every generation. Vary the angle: sometimes focus on the insider identification, sometimes on the scoring system, sometimes on the follow-sizing, sometimes on the edge it gives bettors.
+- Include @OddsJam and oddsjam.com/prediction/insiders somewhere in tweet 2.
+- Cover these 3 data points (order can vary, framing must vary each time):
+  1. Insider entry price vs current price, and what the slippage means for the score
+  2. Relative bet size (the X multiplier) as a conviction signal, and the dollar amount placed
+  3. The insider's sports ROI as a credibility anchor
+- Close with the score out of 100 and what a high score means for the opportunity.
 
 SPORT LABEL GUIDE (pick the most fitting based on sport and score):
 - Score 95-100: "Nuke", "Max", "Lock"
@@ -93,6 +103,7 @@ app.post('/generate', upload.fields([
     const toolCardFile = req.files['toolCard']?.[0];
     const slipFile = req.files['slip']?.[0];
     const customLabel = req.body.label || '';
+    const style = req.body.style || '';
 
     if (!toolCardFile) {
       return res.status(400).json({ error: 'Tool card screenshot is required.' });
@@ -128,18 +139,18 @@ app.post('/generate', upload.fields([
       });
     }
 
-    const labelText = customLabel
-      ? `\n\nCustom label to use in Tweet 1: "${customLabel}"`
-      : '';
+    const labelText = customLabel ? `\n\nCustom label to use in Tweet 1: "${customLabel}"` : '';
+    const styleText = style ? `\n\nTweet 2 tone/style to use: ${style}` : '';
 
     imageContent.push({
       type: 'text',
-      text: `Please generate the 2-tweet thread based on these screenshots.${labelText}`
+      text: `Please generate the 2-tweet thread based on these screenshots.${labelText}${styleText}\n\nIMPORTANT: Vary your hook style and sentence structure. Do not default to the same pattern as a previous generation.`
     });
 
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,
+      temperature: 1,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: imageContent }]
     });
