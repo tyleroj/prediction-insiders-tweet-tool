@@ -133,6 +133,55 @@
       color: #4b5563;
     }
 
+    .paste-btn {
+      margin-top: 10px;
+      background: #1e2330;
+      border: 1px solid #2d3240;
+      border-radius: 7px;
+      color: #9ca3af;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      z-index: 10;
+      position: relative;
+    }
+
+    .paste-btn:hover {
+      background: #252d3f;
+      color: #5fffb0;
+      border-color: #5fffb0;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1e2330;
+      border: 1px solid #2d3240;
+      border-radius: 8px;
+      color: #e8eaf0;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 20px;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success { border-color: #5fffb0; color: #5fffb0; }
+    .toast.error   { border-color: #f87171; color: #f87171; }
+
     /* Filled state: full-size image */
     .upload-preview {
       display: none;
@@ -345,6 +394,8 @@
 </head>
 <body>
 
+  <div class="toast" id="toast"></div>
+
   <div class="logo">
     <div class="logo-dot"></div>
     <h1>Prediction Insiders</h1>
@@ -361,8 +412,9 @@
       <input type="file" id="slipInput" accept="image/*" />
       <div class="upload-empty">
         <div class="upload-icon">🧾</div>
-        <div class="upload-title">Drop or paste Polymarket slip here</div>
-        <div class="upload-hint">PNG, JPG up to 10MB · Ctrl+V / ⌘V to paste</div>
+        <div class="upload-title">Drop betting slip here</div>
+        <div class="upload-hint">PNG, JPG up to 10MB</div>
+        <button class="paste-btn" onclick="event.stopPropagation(); pasteFromClipboard('slipZone')">📋 Paste from Clipboard</button>
       </div>
       <div class="upload-preview" id="slipPreview">
         <img id="slipImg" src="" alt="Betting slip" />
@@ -377,8 +429,9 @@
       <input type="file" id="toolInput" accept="image/*" />
       <div class="upload-empty">
         <div class="upload-icon">📊</div>
-        <div class="upload-title">Drop or paste tool card screenshot here</div>
-        <div class="upload-hint">PNG, JPG up to 10MB · Ctrl+V / ⌘V to paste</div>
+        <div class="upload-title">Drop tool card screenshot here</div>
+        <div class="upload-hint">PNG, JPG up to 10MB</div>
+        <button class="paste-btn" onclick="event.stopPropagation(); pasteFromClipboard('toolZone')">📋 Paste from Clipboard</button>
       </div>
       <div class="upload-preview" id="toolPreview">
         <img id="toolImg" src="" alt="Tool card" />
@@ -438,60 +491,24 @@
   </div>
 
   <script>
-    function setupUpload(inputId, zoneId, imgId, previewId) {
-      const input = document.getElementById(inputId);
-      const zone  = document.getElementById(zoneId);
-      const img   = document.getElementById(imgId);
-
-      input.addEventListener('change', () => {
-        const file = input.files[0];
-        if (!file) return;
-        zone.classList.add('has-file');
-        const reader = new FileReader();
-        reader.onload = e => { img.src = e.target.result; };
-        reader.readAsDataURL(file);
-      });
+    // ── Toast ────────────────────────────────────────────────────────────────
+    let toastTimer = null;
+    function showToast(msg, type = 'success') {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'toast show ' + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { el.className = 'toast'; }, 2800);
     }
 
-    setupUpload('toolInput', 'toolZone', 'toolImg', 'toolPreview');
-    setupUpload('slipInput', 'slipZone', 'slipImg', 'slipPreview');
+    // ── Shared: apply a File to an upload zone ────────────────────────────────
+    function applyFileToZone(zoneId, file) {
+      const isToolZone = zoneId === 'toolZone';
+      const inputId = isToolZone ? 'toolInput' : 'slipInput';
+      const imgId   = isToolZone ? 'toolImg'   : 'slipImg';
+      const zoneEl  = document.getElementById(zoneId);
 
-    // Paste support: paste into focused zone, or use last-clicked zone, or prompt
-    let lastFocusedZone = null;
-
-    ['toolZone', 'slipZone'].forEach(id => {
-      const zone = document.getElementById(id);
-      zone.addEventListener('mouseenter', () => { lastFocusedZone = id; });
-      zone.addEventListener('click', () => { lastFocusedZone = id; });
-    });
-
-    document.addEventListener('paste', (e) => {
-      const items = e.clipboardData && e.clipboardData.items;
-      if (!items) return;
-
-      let imageItem = null;
-      for (const item of items) {
-        if (item.type.startsWith('image/')) { imageItem = item; break; }
-      }
-      if (!imageItem) return;
-
-      e.preventDefault();
-      const file = imageItem.getAsFile();
-      if (!file) return;
-
-      // Determine target zone: last focused, or ask
-      let targetZoneId = lastFocusedZone;
-      if (!targetZoneId) {
-        const choice = confirm('Paste image into Tool Card zone?\n\nOK = Tool Card\nCancel = Betting Slip');
-        targetZoneId = choice ? 'toolZone' : 'slipZone';
-      }
-
-      const isToolZone = targetZoneId === 'toolZone';
-      const inputId  = isToolZone ? 'toolInput'  : 'slipInput';
-      const imgId    = isToolZone ? 'toolImg'    : 'slipImg';
-      const zoneEl   = document.getElementById(targetZoneId);
-
-      // Load preview
+      // Show preview
       const reader = new FileReader();
       reader.onload = ev => {
         document.getElementById(imgId).src = ev.target.result;
@@ -499,17 +516,79 @@
       };
       reader.readAsDataURL(file);
 
-      // Inject file into the hidden input via DataTransfer so FormData picks it up
+      // Inject into file input so FormData picks it up
       try {
         const dt = new DataTransfer();
         dt.items.add(file);
         document.getElementById(inputId).files = dt.files;
       } catch (_) {
-        // DataTransfer not supported — store file reference for manual FormData append
         document.getElementById(inputId)._pastedFile = file;
       }
+    }
+
+    // ── Clipboard API button (explicit user gesture — most reliable) ──────────
+    async function pasteFromClipboard(zoneId) {
+      if (!navigator.clipboard || !navigator.clipboard.read) {
+        showToast('Clipboard API not available — try Ctrl+V / ⌘V after clicking the page', 'error');
+        return;
+      }
+      try {
+        const items = await navigator.clipboard.read();
+        let blob = null;
+        for (const item of items) {
+          const imageType = item.types.find(t => t.startsWith('image/'));
+          if (imageType) { blob = await item.getType(imageType); break; }
+        }
+        if (!blob) {
+          showToast('No image found in clipboard', 'error');
+          return;
+        }
+        const file = new File([blob], 'pasted.png', { type: blob.type || 'image/png' });
+        applyFileToZone(zoneId, file);
+        showToast('Image pasted!', 'success');
+      } catch (err) {
+        if (err.name === 'NotAllowedError') {
+          showToast('Allow clipboard access when prompted, then try again', 'error');
+        } else {
+          showToast('Paste failed — try Ctrl+V / ⌘V after clicking the zone', 'error');
+        }
+      }
+    }
+
+    // ── Standard file input ───────────────────────────────────────────────────
+    function setupUpload(inputId, zoneId) {
+      const input = document.getElementById(inputId);
+      input.addEventListener('change', () => {
+        if (input.files[0]) applyFileToZone(zoneId, input.files[0]);
+      });
+    }
+
+    setupUpload('toolInput', 'toolZone');
+    setupUpload('slipInput', 'slipZone');
+
+    // ── Keyboard paste fallback (Ctrl+V / ⌘V while page has focus) ───────────
+    let lastHoveredZone = null;
+    ['toolZone', 'slipZone'].forEach(id => {
+      document.getElementById(id).addEventListener('mouseenter', () => { lastHoveredZone = id; });
     });
 
+    document.addEventListener('paste', (e) => {
+      const items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+      let imageItem = null;
+      for (const item of items) {
+        if (item.type.startsWith('image/')) { imageItem = item; break; }
+      }
+      if (!imageItem) return;
+      e.preventDefault();
+      const file = imageItem.getAsFile();
+      if (!file) { showToast('Could not read image from clipboard', 'error'); return; }
+      const zoneId = lastHoveredZone || 'toolZone';
+      applyFileToZone(zoneId, file);
+      showToast('Image pasted into ' + (zoneId === 'toolZone' ? 'Tool Card' : 'Betting Slip'), 'success');
+    });
+
+    // ── Generate ──────────────────────────────────────────────────────────────
     async function generate() {
       const toolInputEl = document.getElementById('toolInput');
       const toolFile = toolInputEl.files[0] || toolInputEl._pastedFile;
@@ -529,14 +608,11 @@
       errorEl.style.display = 'none';
 
       try {
-        const toolInput = document.getElementById('toolInput');
-        const toolFile = toolInput.files[0] || toolInput._pastedFile;
-
         const formData = new FormData();
         formData.append('toolCard', toolFile);
 
-        const slipInput = document.getElementById('slipInput');
-        const slipFile = slipInput.files[0] || slipInput._pastedFile;
+        const slipInputEl = document.getElementById('slipInput');
+        const slipFile = slipInputEl.files[0] || slipInputEl._pastedFile;
         if (slipFile) formData.append('slip', slipFile);
 
         const label = document.getElementById('labelInput').value.trim();
