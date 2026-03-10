@@ -202,17 +202,41 @@
       border-radius: 6px;
     }
 
-    .upload-preview .change-label {
+    .preview-actions {
       position: absolute;
       bottom: 14px;
       right: 14px;
-      background: rgba(13,15,20,0.85);
-      color: #5fffb0;
+      display: flex;
+      gap: 6px;
+    }
+
+    .preview-action-btn {
+      background: rgba(13,15,20,0.88);
+      border: 1px solid #2d3240;
+      color: #9ca3af;
       font-size: 11px;
       font-weight: 600;
-      padding: 4px 8px;
+      padding: 4px 9px;
       border-radius: 5px;
-      pointer-events: none;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+      z-index: 5;
+      position: relative;
+    }
+
+    .preview-action-btn:hover {
+      color: #5fffb0;
+      border-color: #5fffb0;
+    }
+
+    .preview-action-btn.copy-img-btn {
+      color: #1d9bf0;
+      border-color: #1d4a70;
+    }
+
+    .preview-action-btn.copy-img-btn:hover {
+      border-color: #1d9bf0;
     }
 
     .upload-zone.has-file .upload-empty { display: none; }
@@ -418,7 +442,10 @@
       </div>
       <div class="upload-preview" id="slipPreview">
         <img id="slipImg" src="" alt="Betting slip" />
-        <span class="change-label">Change</span>
+        <div class="preview-actions">
+          <button class="preview-action-btn copy-img-btn" onclick="event.stopPropagation(); copyImageFromZone('slipZone')">Copy Image</button>
+          <button class="preview-action-btn" onclick="event.stopPropagation(); document.getElementById('slipInput').click()">Change</button>
+        </div>
       </div>
     </div>
 
@@ -435,7 +462,10 @@
       </div>
       <div class="upload-preview" id="toolPreview">
         <img id="toolImg" src="" alt="Tool card" />
-        <span class="change-label">Change</span>
+        <div class="preview-actions">
+          <button class="preview-action-btn copy-img-btn" onclick="event.stopPropagation(); copyImageFromZone('toolZone')">Copy Image</button>
+          <button class="preview-action-btn" onclick="event.stopPropagation(); document.getElementById('toolInput').click()">Change</button>
+        </div>
       </div>
     </div>
 
@@ -523,6 +553,31 @@
         document.getElementById(inputId).files = dt.files;
       } catch (_) {
         document.getElementById(inputId)._pastedFile = file;
+      }
+    }
+
+    // ── Copy image FROM zone to clipboard (for pasting into Twitter) ─────────
+    async function copyImageFromZone(zoneId) {
+      const imgId = zoneId === 'toolZone' ? 'toolImg' : 'slipImg';
+      const img = document.getElementById(imgId);
+      if (!img.src || img.src === window.location.href) {
+        showToast('No image to copy', 'error'); return;
+      }
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width  = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        canvas.toBlob(async (blob) => {
+          try {
+            await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+            showToast('Image copied — paste into Twitter!', 'success');
+          } catch (err) {
+            showToast('Copy blocked — right-click the image and choose "Copy Image"', 'error');
+          }
+        }, 'image/png');
+      } catch (err) {
+        showToast('Could not copy image', 'error');
       }
     }
 
