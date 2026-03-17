@@ -120,6 +120,19 @@ Include @OddsJam and oddsjam.com/prediction/insiders woven naturally into one of
 
 ---
 
+VIDEO CTA (only include if a video URL is provided):
+If the user provides a video URL, include one short line in tweet 2 that links to it. Place it after the data breakdown, before the closing score line. Vary the phrasing each generation — rotate between options like these:
+- "Tutorial on how it works: [URL]"
+- "Tutorial: [URL]"
+- "Full breakdown of how this strategy works: [URL]"
+- "How the tool works: [URL]"
+- "New to the tool? Quick walkthrough: [URL]"
+- "See how we use it: [URL]"
+
+Keep it one line. No extra commentary around it. If no video URL is provided, omit this entirely.
+
+---
+
 STYLE TONES (user may specify one):
 - Sharp & Direct: Dense, minimal words. Every sentence is a data point.
 - Hype: More energy. Strong verbs. Still data-driven but punchy and urgent.
@@ -171,6 +184,7 @@ app.post('/generate', upload.fields([
     const slipFile = req.files['slip']?.[0];
     const customLabel = req.body.label || '';
     const style = req.body.style || '';
+    const videoUrl = req.body.videoUrl || '';
 
     if (!toolCardFile) {
       return res.status(400).json({ error: 'Tool card screenshot is required.' });
@@ -208,10 +222,11 @@ app.post('/generate', upload.fields([
 
     const labelText = customLabel ? `\n\nCustom label to use in Tweet 1: "${customLabel}"` : '';
     const styleText = style ? `\n\nTone/style for this thread: ${style}` : '';
+    const videoText = videoUrl ? `\n\nVideo URL to include in Tweet 2: ${videoUrl}` : '';
 
     imageContent.push({
       type: 'text',
-      text: `Generate the 2-tweet thread from these screenshots.${labelText}${styleText}\n\nRemember: do NOT open tweet 2 with a generic tool description. Start with the data. Vary your hook style from previous generations.`
+      text: `Generate the 2-tweet thread from these screenshots.${labelText}${styleText}${videoText}\n\nRemember: do NOT open tweet 2 with a generic tool description. Start with the data. Vary your hook style from previous generations.`
     });
 
     const message = await client.messages.create({
