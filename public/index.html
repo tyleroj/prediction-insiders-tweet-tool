@@ -513,17 +513,6 @@
       <button class="style-btn" data-style="Casual">Casual</button>
     </div>
 
-    <div class="section-label" style="margin-top:16px;">
-      Tutorial Video Link
-      <span class="optional-badge">Optional</span>
-    </div>
-    <input
-      class="label-input"
-      id="videoInput"
-      type="text"
-      placeholder="e.g. https://youtu.be/1BmHOrxIET4"
-    />
-
     <div class="section-label">
       Custom Label
       <span class="optional-badge">Optional</span>
@@ -733,9 +722,6 @@
 
         const label = document.getElementById('labelInput').value.trim();
         if (label) formData.append('label', label);
-
-        const videoUrl = document.getElementById('videoInput').value.trim();
-        if (videoUrl) formData.append('videoUrl', videoUrl);
 
         const activeStyle = document.querySelector('.style-btn.active');
         const style = activeStyle ? activeStyle.dataset.style : '';

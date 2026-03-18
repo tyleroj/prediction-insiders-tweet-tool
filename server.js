@@ -184,7 +184,7 @@ app.post('/generate', upload.fields([
     const slipFile = req.files['slip']?.[0];
     const customLabel = req.body.label || '';
     const style = req.body.style || '';
-    const videoUrl = req.body.videoUrl || '';
+    const videoUrl = 'https://youtu.be/1BmHOrxIET4';
 
     if (!toolCardFile) {
       return res.status(400).json({ error: 'Tool card screenshot is required.' });
